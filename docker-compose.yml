@@ -18,8 +18,7 @@ services:
       - esdata1:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-    networks:
-      - esnet
+   
 
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
@@ -38,8 +37,7 @@ services:
         hard: -1
     volumes:
       - esdata2:/usr/share/elasticsearch/data
-    networks:
-      - esnet
+    
 
   elasticsearch3:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
@@ -58,9 +56,7 @@ services:
         hard: -1
     volumes:
       - esdata3:/usr/share/elasticsearch/data
-    networks:
-      - esnet
-      
+    
   elasticsearch4:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
     container_name: elasticsearch4
@@ -78,26 +74,23 @@ services:
         hard: -1
     volumes:
       - esdata4:/usr/share/elasticsearch/data
-    networks:
-      - esnet
+    
   kibana:
     image: 'docker.elastic.co/kibana/kibana:6.4.2'
     container_name: kibana
     environment:
       SERVER_NAME: kibana.local
-      ELASTICSEARCH_URL: http://localhost:9200
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     ports:
       - '5601:5601'
-    networks:
-      - esnet
+   
       
   app:
     image: test_pipl/dummy-app:1.0.0
     build:
       context: dummy-app
       dockerfile: Dockerfile
-    networks:
-       - esnet 
+    
  
   logstash: 
     hostname: logstash 
@@ -107,8 +100,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - 5044:5044
-    networks:
-      - esnet 
+    
     environment:
       LOG_LEVEL: error
     links:
@@ -136,5 +128,4 @@ volumes:
   esdata4:
     driver: local  
 
-networks:
-  esnet:
+
