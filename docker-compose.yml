@@ -113,7 +113,7 @@ services:
       context: filebeat
       dockerfile: Dockerfile
     volumes:   
-     - "/var/lib/docker/containers:/usr/share/test_Pipl/data:ro"
+     - "/var/lib/docker/containers:/usr/share/test_pipl/data:ro"
      - "/var/run/docker.sock:/var/run/docker.sock"
     links:
        - logstash    
