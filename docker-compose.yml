@@ -9,7 +9,7 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - http.cors.enabled=true
       - http.cors.allow-origin=*
-      - discovery.zen.minimum_master_nodes=2
+      - discovery.zen.minimum_master_nodes=3
     ulimits:
       memlock:
         soft: -1
@@ -31,7 +31,7 @@ services:
       - "discovery.zen.ping.unicast.hosts=elasticsearch"
       - http.cors.enabled=true
       - http.cors.allow-origin=*
-      - discovery.zen.minimum_master_nodes=2
+      - discovery.zen.minimum_master_nodes=3
     ulimits:
       memlock:
         soft: -1
@@ -51,7 +51,7 @@ services:
       - "discovery.zen.ping.unicast.hosts=elasticsearch"
       - http.cors.enabled=true
       - http.cors.allow-origin=*
-      - discovery.zen.minimum_master_nodes=2
+      - discovery.zen.minimum_master_nodes=3
     ulimits:
       memlock:
         soft: -1
@@ -60,7 +60,26 @@ services:
       - esdata3:/usr/share/elasticsearch/data
     networks:
       - esnet
-
+      
+  elasticsearch4:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.2
+    container_name: elasticsearch4
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch"
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - discovery.zen.minimum_master_nodes=3
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata4:/usr/share/elasticsearch/data
+    networks:
+      - esnet
   kibana:
     image: 'docker.elastic.co/kibana/kibana:6.4.2'
     container_name: kibana
@@ -71,14 +90,49 @@ services:
       - '5601:5601'
     networks:
       - esnet
-
-  headPlugin:
-    image: 'mobz/elasticsearch-head:5'
-    container_name: head
-    ports:
-      - '9100:9100'
+      
+  app:
+    image: pipl/dummy-app:1.0.0
+    build:
+      context: dummy-app
+      dockerfile: Dockerfile
     networks:
-      - esnet
+       - esnet  
+  app:
+    image: pipl/dummy_2-app:1.0.0
+    build:
+      context: dummy-app
+      dockerfile: Dockerfile
+    networks:
+       - esnet       
+ 
+ 
+  logstash: 
+    hostname: logstash 
+    image: pipl/logstash:1.0.0
+    build:
+      context: logstash
+      dockerfile: Dockerfile
+    ports:
+      - 5044:5044
+    networks:
+      - esnet 
+    environment:
+      LOG_LEVEL: error
+    links:
+      - elasticsearch
+      
+  filebeat:
+    hostname: filebeat
+    image: pipl/filebeat:1.0.0
+    build:
+      context: filebeat
+      dockerfile: Dockerfile
+    volumes:   
+     - "/var/lib/docker/containers:/usr/share/Pipl/data:ro"
+     - "/var/run/docker.sock:/var/run/docker.sock"
+    links:
+       - logstash    
 
 volumes:
   esdata1:
@@ -87,6 +141,8 @@ volumes:
     driver: local
   esdata3:
     driver: local
+  esdata4:
+    driver: local  
 
 networks:
   esnet:
